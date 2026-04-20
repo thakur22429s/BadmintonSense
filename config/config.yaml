@@ -1,0 +1,149 @@
+# Badminton-Sense Configuration
+
+paths:
+  raw_videos: data/raw/videos
+  annotations: data/annotations
+  clips: data/clips
+  poses: data/poses
+  processed: data/processed
+  results: results
+  models: results/models
+  figures: results/figures
+
+data:
+  # ShuttleSet source
+  shuttleset_repo: "https://github.com/wywyWang/CoachAI-Projects"
+  shuttleset_branch: "main"
+
+  # Clip extraction
+  clip_fps: 30
+  clip_pre_hit_seconds: 1.0
+  clip_post_hit_seconds: 0.5
+  clip_target_frames: 45  # ~1.5s at 30fps
+
+  # Pose extraction
+  mediapipe_model_complexity: 2  # 0=lite, 1=full, 2=heavy
+  mediapipe_min_detection_confidence: 0.5
+  mediapipe_min_tracking_confidence: 0.5
+  min_detection_rate: 0.7  # minimum fraction of frames with valid pose
+
+  # Keypoint selection (MediaPipe indices)
+  selected_keypoints: [0, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 23, 24, 25, 26]
+  num_keypoints: 15
+  keypoint_dims: 3  # x, y, z
+
+  # Preprocessing
+  sequence_length: 30  # fixed temporal length after resampling
+  normalize_to_hip: true
+  scale_by_torso: true
+
+  # Augmentation
+  augmentation:
+    enabled: true
+    temporal_jitter_frames: 3
+    gaussian_noise_std: 0.01
+    horizontal_flip_prob: 0.5
+    temporal_scale_range: [0.8, 1.2]
+    frame_dropout_rate: 0.15
+
+  # Splits
+  split_strategy: "loso"  # "loso" or "stratified"
+  stratified_ratios: [0.70, 0.15, 0.15]  # train/val/test
+  random_seed: 42
+
+# Stroke class taxonomy
+classes:
+  num_classes: 10
+  names:
+    - "Serve"
+    - "Clear/Lob"
+    - "Drop"
+    - "Smash"
+    - "Drive"
+    - "Net Shot"
+    - "Push/Rush"
+    - "Defensive Return"
+    - "Cross-court"
+    - "Other"
+  # Mapping from ShuttleSet 18-class to our 10-class
+  shuttleset_mapping:
+    "short service": "Serve"
+    "long service": "Serve"
+    "clear": "Clear/Lob"
+    "lob": "Clear/Lob"
+    "drop": "Drop"
+    "smash": "Smash"
+    "drive": "Drive"
+    "net shot": "Net Shot"
+    "push/rush": "Push/Rush"
+    "defensive shot": "Defensive Return"
+    "block": "Defensive Return"
+    "cross-court net shot": "Cross-court"
+    "cross-court drop": "Cross-court"
+    "cross-court clear": "Cross-court"
+    "slice": "Drop"
+    "drive return": "Drive"
+    "rush": "Push/Rush"
+    "other": "Other"
+
+model:
+  # LSTM
+  lstm:
+    input_dim: 45  # 15 keypoints * 3 coordinates
+    hidden_dim: 128
+    num_layers: 2
+    dropout: 0.3
+    bidirectional: true
+    fc_dim: 256
+
+  # Transformer
+  transformer:
+    spatial:
+      embed_dim: 64
+      num_heads: 2
+      num_layers: 2
+      dropout: 0.1
+    temporal:
+      embed_dim: 128
+      num_heads: 4
+      num_layers: 3
+      dropout: 0.1
+    keypoint_embed_dim: 32
+
+training:
+  # Common
+  max_epochs: 100
+  early_stopping_patience: 10
+  label_smoothing: 0.1
+  num_workers: 4
+
+  # LSTM-specific
+  lstm:
+    batch_size: 64
+    optimizer: "adam"
+    learning_rate: 1.0e-3
+    lr_scheduler: "plateau"
+    lr_patience: 5
+    lr_factor: 0.5
+
+  # Transformer-specific
+  transformer:
+    batch_size: 32
+    optimizer: "adamw"
+    learning_rate: 5.0e-4
+    weight_decay: 1.0e-4
+    lr_scheduler: "cosine"
+    warmup_epochs: 5
+
+evaluation:
+  primary_metric: "macro_f1"
+  save_confusion_matrix: true
+  save_training_curves: true
+  save_tsne: true
+  tsne_perplexity: 30
+
+demo:
+  sample_clips_dir: data/clips
+  max_upload_size_mb: 50
+  display_skeleton: true
+  display_confidence: true

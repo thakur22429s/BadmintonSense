@@ -1,0 +1,43 @@
+# Data
+data/raw/
+data/clips/
+data/poses/
+data/processed/
+*.mp4
+*.avi
+*.mkv
+
+# Model checkpoints
+results/models/*.pt
+results/models/*.pth
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+wandb/
