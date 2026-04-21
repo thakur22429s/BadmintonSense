@@ -65,26 +65,38 @@ classes:
     - "Defensive Return"
     - "Cross-court"
     - "Other"
-  # Mapping from ShuttleSet 18-class to our 10-class
+  # Mapping from ShuttleSet Chinese stroke names to our 10-class taxonomy
+  # Source: ShuttleSet set CSVs use Chinese labels in the 'type' column
+  # All 19 types from the dataset are covered below
   shuttleset_mapping:
-    "short service": "Serve"
-    "long service": "Serve"
-    "clear": "Clear/Lob"
-    "lob": "Clear/Lob"
-    "drop": "Drop"
-    "smash": "Smash"
-    "drive": "Drive"
-    "net shot": "Net Shot"
-    "push/rush": "Push/Rush"
-    "defensive shot": "Defensive Return"
-    "block": "Defensive Return"
-    "cross-court net shot": "Cross-court"
-    "cross-court drop": "Cross-court"
-    "cross-court clear": "Cross-court"
-    "slice": "Drop"
-    "drive return": "Drive"
-    "rush": "Push/Rush"
-    "other": "Other"
+    # Serves (2,424 strokes)
+    "發短球": "Serve"         # short serve
+    "發長球": "Serve"         # long serve
+    # Clear / Lob (8,253 strokes)
+    "長球": "Clear/Lob"      # clear
+    "挑球": "Clear/Lob"      # lob / lift
+    # Drop (3,500 strokes)
+    "切球": "Drop"           # slice/drop
+    "過度切球": "Drop"        # transitional slice
+    # Smash (4,234 strokes)
+    "殺球": "Smash"          # smash
+    "點扣": "Smash"          # tap smash / half smash
+    # Drive (1,241 strokes)
+    "平球": "Drive"          # drive
+    "後場抽平球": "Drive"     # backcourt drive
+    "小平球": "Drive"        # short drive / push drive
+    # Net Shot (7,661 strokes)
+    "放小球": "Net Shot"     # net shot / drop to net
+    "勾球": "Net Shot"       # cross-court net shot
+    # Push / Rush (3,437 strokes)
+    "推球": "Push/Rush"      # push
+    "撲球": "Push/Rush"      # rush / kill at net
+    # Defensive Return (4,327 strokes)
+    "擋小球": "Defensive Return"   # block
+    "防守回抽": "Defensive Return"  # defensive drive return
+    "防守回挑": "Defensive Return"  # defensive lift return
+    # Other / unknown (1,407 strokes)
+    "未知球種": "Other"       # unknown stroke type
 
 model:
   # LSTM

@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 
 def load_config(config_path: str = "config/config.yaml") -> dict:
-    with open(config_path) as f:
+    with open(config_path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -106,13 +106,21 @@ def extract_all_clips(
 
     for idx, row in tqdm(annotations.iterrows(), total=len(annotations), desc="Extracting clips"):
         match_id = str(row["match_id"])
-        hit_frame = int(row[frame_col])
+        match_name = str(row.get("match_name", match_id))
 
-        # Determine video file path
-        if match_id in video_mapping:
+        hit_frame_raw = row.get(frame_col, None)
+        if pd.isna(hit_frame_raw):
+            failed += 1
+            continue
+        hit_frame = int(hit_frame_raw)
+
+        # Determine video file path (videos are named by match_name)
+        if match_name in video_mapping:
+            video_file = video_dir / video_mapping[match_name]
+        elif match_id in video_mapping:
             video_file = video_dir / video_mapping[match_id]
         else:
-            video_file = _find_video_file(video_dir, match_id)
+            video_file = _find_video_file(video_dir, match_name)
 
         if video_file is None or not video_file.exists():
             failed += 1
@@ -121,7 +129,8 @@ def extract_all_clips(
         start_frame = max(0, hit_frame - pre_frames)
         end_frame = hit_frame + post_frames
 
-        clip_id = f"{match_id}_r{row.get('rally', 0)}_b{row.get('ball_round', idx)}"
+        set_num = row.get("set_num", 0)
+        clip_id = f"{match_name}_s{set_num}_r{row.get('rally', 0)}_b{row.get('ball_round', idx)}"
         clip_path = output_dir / f"{clip_id}.mp4"
 
         if clip_path.exists():

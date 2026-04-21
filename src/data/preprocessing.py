@@ -7,7 +7,7 @@ import yaml
 
 
 def load_config(config_path: str = "config/config.yaml") -> dict:
-    with open(config_path) as f:
+    with open(config_path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -260,8 +260,8 @@ def preprocess_dataset(
         if np.isnan(raw_kps).all():
             continue
 
-        # Map stroke type to our class taxonomy
-        original_type = str(row.get("stroke_type", "other")).lower().strip()
+        # Map stroke type to our class taxonomy (Chinese labels from ShuttleSet)
+        original_type = str(row.get("stroke_type", "other")).strip()
         mapped_class = class_mapping.get(original_type, "Other")
         if mapped_class not in class_to_idx:
             mapped_class = "Other"
