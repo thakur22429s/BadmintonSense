@@ -141,9 +141,11 @@ class Trainer:
                     print(f"Early stopping at epoch {epoch+1} (best F1: {best_f1:.4f})")
                     break
 
-        # Load best model
+        # Load best model and re-save with history
         checkpoint = torch.load(best_model_path, map_location=self.device, weights_only=False)
         self.model.load_state_dict(checkpoint["model_state_dict"])
+        checkpoint["history"] = self.history
+        torch.save(checkpoint, best_model_path)
         print(f"Loaded best model from epoch {checkpoint['epoch']+1} (F1: {best_f1:.4f})")
 
         return self.history

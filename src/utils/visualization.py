@@ -115,7 +115,10 @@ def plot_tsne_embeddings(
     """t-SNE visualization of model embeddings colored by class."""
     from sklearn.manifold import TSNE
 
-    tsne = TSNE(n_components=2, perplexity=perplexity, random_state=42, n_iter=1000)
+    # sklearn >= 1.6 renamed n_iter to max_iter
+    # Clamp perplexity to be less than n_samples
+    effective_perplexity = min(perplexity, max(5, len(embeddings) // 5))
+    tsne = TSNE(n_components=2, perplexity=effective_perplexity, random_state=42, max_iter=1000)
     coords = tsne.fit_transform(embeddings)
 
     fig, ax = plt.subplots(figsize=(10, 8))

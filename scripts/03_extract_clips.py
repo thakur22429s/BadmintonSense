@@ -31,13 +31,28 @@ def main():
     annotations = parse_annotations(ann_dir)
     print(f"  Total strokes in annotations: {len(annotations)}")
 
+    # Filter to only matches that have downloaded videos
+    available_videos = {p.stem for p in video_dir.glob("*.mp4")}
+    if available_videos:
+        mask = annotations["match_name"].isin(available_videos)
+        annotations = annotations[mask].reset_index(drop=True)
+        print(f"  Filtered to {len(annotations)} strokes for {len(available_videos)} downloaded matches")
+
     print("\nExtracting clips...")
     clips_df = extract_all_clips(annotations, video_dir, clip_dir, config)
 
     print(f"\n{'='*60}")
     print(f"Extracted {len(clips_df)} clips")
     print(f"Stroke distribution:")
-    print(clips_df["stroke_type"].value_counts().to_string())
+    try:
+        print(clips_df["stroke_type"].value_counts().to_string())
+    except UnicodeEncodeError:
+        # Chinese stroke names can fail on Windows cp1252 console
+        for stype, count in clips_df["stroke_type"].value_counts().items():
+            try:
+                print(f"  {stype}: {count}")
+            except UnicodeEncodeError:
+                print(f"  (non-ASCII type): {count}")
     print(f"\nNext: python scripts/04_extract_poses.py")
 
 

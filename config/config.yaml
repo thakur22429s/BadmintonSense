@@ -22,10 +22,10 @@ data:
   clip_target_frames: 45  # ~1.5s at 30fps
 
   # Pose extraction
-  mediapipe_model_complexity: 2  # 0=lite, 1=full, 2=heavy
+  mediapipe_model_complexity: 0  # 0=lite, 1=full, 2=heavy (lite for subset validation)
   mediapipe_min_detection_confidence: 0.5
   mediapipe_min_tracking_confidence: 0.5
-  min_detection_rate: 0.7  # minimum fraction of frames with valid pose
+  min_detection_rate: 0.5  # minimum fraction of frames with valid pose (lowered for subset)
 
   # Keypoint selection (MediaPipe indices)
   selected_keypoints: [0, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 23, 24, 25, 26]
@@ -127,7 +127,7 @@ training:
   max_epochs: 100
   early_stopping_patience: 10
   label_smoothing: 0.1
-  num_workers: 4
+  num_workers: 0  # 0 for Windows compatibility
 
   # LSTM-specific
   lstm:

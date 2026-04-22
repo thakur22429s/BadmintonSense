@@ -40,19 +40,24 @@ def evaluate_model(
     all_preds = np.array(all_preds)
     all_labels = np.array(all_labels)
 
-    macro_f1 = f1_score(all_labels, all_preds, average="macro", zero_division=0)
-    weighted_f1 = f1_score(all_labels, all_preds, average="weighted", zero_division=0)
+    # Use explicit label list to handle missing classes (e.g., 0 samples)
+    num_classes = len(class_names) if class_names else max(all_labels.max(), all_preds.max()) + 1
+    all_class_labels = list(range(num_classes))
+
+    macro_f1 = f1_score(all_labels, all_preds, labels=all_class_labels, average="macro", zero_division=0)
+    weighted_f1 = f1_score(all_labels, all_preds, labels=all_class_labels, average="weighted", zero_division=0)
     accuracy = (all_preds == all_labels).mean()
 
-    per_class_f1 = f1_score(all_labels, all_preds, average=None, zero_division=0)
-    per_class_precision = precision_score(all_labels, all_preds, average=None, zero_division=0)
-    per_class_recall = recall_score(all_labels, all_preds, average=None, zero_division=0)
+    per_class_f1 = f1_score(all_labels, all_preds, labels=all_class_labels, average=None, zero_division=0)
+    per_class_precision = precision_score(all_labels, all_preds, labels=all_class_labels, average=None, zero_division=0)
+    per_class_recall = recall_score(all_labels, all_preds, labels=all_class_labels, average=None, zero_division=0)
 
-    cm = confusion_matrix(all_labels, all_preds)
+    cm = confusion_matrix(all_labels, all_preds, labels=all_class_labels)
 
-    target_names = class_names or [str(i) for i in range(len(per_class_f1))]
+    target_names = class_names or [str(i) for i in range(num_classes)]
     report = classification_report(
-        all_labels, all_preds, target_names=target_names, zero_division=0
+        all_labels, all_preds, labels=all_class_labels,
+        target_names=target_names, zero_division=0,
     )
 
     return {

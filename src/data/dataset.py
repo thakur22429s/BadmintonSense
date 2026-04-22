@@ -122,32 +122,52 @@ def get_stratified_split(
     ratios: tuple[float, float, float] = (0.7, 0.15, 0.15),
     seed: int = 42,
 ) -> dict:
-    """Standard stratified train/val/test split, respecting match boundaries.
+    """Stratified train/val/test split, respecting match boundaries when possible.
 
-    No match appears in multiple splits.
+    With many matches: splits at match level (no match in multiple splits).
+    With few matches (<=4): falls back to sample-level stratified split.
 
     Returns:
         Dict with keys: train_indices, val_indices, test_indices
     """
-    from sklearn.model_selection import GroupShuffleSplit
-
-    match_ids = metadata["match_id"].values
     unique_matches = metadata["match_id"].unique()
+    n_matches = len(unique_matches)
 
     rng = np.random.RandomState(seed)
-    rng.shuffle(unique_matches)
 
-    n_matches = len(unique_matches)
-    n_train = int(n_matches * ratios[0])
-    n_val = int(n_matches * ratios[1])
+    if n_matches >= 5:
+        # Match-level split
+        rng.shuffle(unique_matches)
+        n_train = max(1, int(n_matches * ratios[0]))
+        n_val = max(1, int(n_matches * ratios[1]))
 
-    train_matches = set(unique_matches[:n_train])
-    val_matches = set(unique_matches[n_train:n_train + n_val])
-    test_matches = set(unique_matches[n_train + n_val:])
+        train_matches = set(unique_matches[:n_train])
+        val_matches = set(unique_matches[n_train:n_train + n_val])
+        test_matches = set(unique_matches[n_train + n_val:])
 
-    train_indices = np.where(metadata["match_id"].isin(train_matches))[0]
-    val_indices = np.where(metadata["match_id"].isin(val_matches))[0]
-    test_indices = np.where(metadata["match_id"].isin(test_matches))[0]
+        train_indices = np.where(metadata["match_id"].isin(train_matches))[0]
+        val_indices = np.where(metadata["match_id"].isin(val_matches))[0]
+        test_indices = np.where(metadata["match_id"].isin(test_matches))[0]
+    else:
+        # Sample-level stratified split for small match counts
+        from sklearn.model_selection import train_test_split
+
+        n_total = len(labels)
+        all_indices = np.arange(n_total)
+
+        # First split: train vs (val+test)
+        val_test_ratio = ratios[1] + ratios[2]
+        train_indices, valtest_indices = train_test_split(
+            all_indices, test_size=val_test_ratio,
+            stratify=labels, random_state=seed,
+        )
+
+        # Second split: val vs test
+        val_ratio_of_remaining = ratios[1] / val_test_ratio
+        val_indices, test_indices = train_test_split(
+            valtest_indices, test_size=(1 - val_ratio_of_remaining),
+            stratify=labels[valtest_indices], random_state=seed,
+        )
 
     return {
         "train_indices": train_indices,

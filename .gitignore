@@ -1,11 +1,11 @@
 # Data
-data/raw/
-data/clips/
-data/poses/
-data/processed/
+/data/
 *.mp4
 *.avi
 *.mkv
+
+# MediaPipe model weights
+/models/
 
 # Model checkpoints
 results/models/*.pt
