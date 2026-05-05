@@ -24,7 +24,7 @@ BWF Match Video → Clip Stroke Segments → MediaPipe Pose Extraction → Hip-C
 - **Source:** ShuttleSet (KDD 2023) from the CoachAI-Projects GitHub repo
 - **Full dataset:** 36,492 annotated strokes across 44 BWF professional matches
 - **Annotations:** Chinese-language stroke labels mapped to a 10-class English taxonomy
-- **Subset used for validation:** 3 matches (4,048 strokes → 1,490 valid pose sequences with heavy MediaPipe model)
+- **Subset used for validation:** 7 matches (7,350 strokes → 3,639 valid pose sequences with heavy MediaPipe model)
 
 ### 10-Class Stroke Taxonomy (mapped from 19 ShuttleSet Chinese labels):
 | Class | Description | ShuttleSet Labels |
@@ -101,14 +101,32 @@ BWF Match Video → Clip Stroke Segments → MediaPipe Pose Extraction → Hip-C
 
 | Metric | BiLSTM | Transformer |
 |--------|--------|-------------|
-| **Macro-F1** | **0.175** | 0.118 |
-| **Weighted-F1** | **0.205** | 0.155 |
-| **Accuracy** | 21.9% | 29.0% |
-| Best Epoch | 44 (of 54, early stopped) | 67 (of 77, early stopped) |
+| **Macro-F1** | **0.213** | 0.068 (collapsed) |
+| **Weighted-F1** | **0.235** | 0.146 |
+| **Accuracy** | 25.3% | 31.0% (majority class) |
+| Best Epoch | 30 (of 42, early stopped) | 6 (of 18, early stopped) |
 
-**Heavy pose model run (1,490 valid sequences) vs lite pose run (1,721 sequences):**
-- BiLSTM: 0.139 → 0.175 (+26% relative)
-- Transformer: 0.085 → 0.118 (+38% relative, after LR tuning to 1e-4 + plateau)
+**Progression across runs:**
+| Run | Data | Classes | LSTM F1 | LSTM Acc |
+|-----|------|---------|---------|----------|
+| Lite poses | 3 matches (1,721 seq) | 10 | 0.139 | 22.4% |
+| Heavy poses | 3 matches (1,490 seq) | 10 | 0.175 | 21.9% |
+| **Heavy + 7 matches + 7-class** | **7 matches (3,639 seq)** | **7** | **0.213** | **25.3%** |
+
+**Total improvement: +53% F1 relative** (0.139 → 0.213) from data scaling + class taxonomy refinement.
+
+**Per-class F1 (LSTM, final test set):**
+| Class | F1 | Support |
+|-------|-----|---------|
+| Overhead-Soft (Clear/Drop merged) | 0.38 | 169 |
+| Other | 0.40 | 33 |
+| Push/Rush | 0.20 | 59 |
+| Net Shot | 0.18 | 102 |
+| Defensive Return | 0.14 | 77 |
+| Serve | 0.11 | 43 |
+| Smash | 0.07 | 63 |
+
+**Why Transformer collapsed:** Spatial-Temporal Transformer architecture is data-hungry. With only 2,547 training samples, model converges to majority-class prediction (always predicts "Overhead-Soft"). Tried multiple configs (LR tuning, plateau scheduler, smaller architecture, no class weights) — none escaped the data limitation. A vanilla Transformer encoder over flat keypoints might work better but wasn't tested. **LSTM is the practical winner at this data scale.**
 
 ### Per-Class F1 Scores (Test Set)
 

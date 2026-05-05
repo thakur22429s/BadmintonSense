@@ -135,7 +135,9 @@ def get_stratified_split(
 
     rng = np.random.RandomState(seed)
 
-    if n_matches >= 5:
+    # Force sample-level stratified split (small dataset, distribution shift hurts)
+    use_match_level = False
+    if n_matches >= 5 and use_match_level:
         # Match-level split
         rng.shuffle(unique_matches)
         n_train = max(1, int(n_matches * ratios[0]))

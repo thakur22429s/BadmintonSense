@@ -44,8 +44,11 @@ def train_single_fold(
         sequences, labels, train_indices, val_indices, config, batch_size
     )
 
-    # Train
-    trainer = Trainer(model, config, model_type=model_type, device=device)
+    # Train (pass train labels for optional class weighting)
+    trainer = Trainer(
+        model, config, model_type=model_type, device=device,
+        train_labels=labels[train_indices],
+    )
     history = trainer.train(train_loader, val_loader, fold_id=fold_id)
 
     # Final evaluation

@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau, CosineAnnealingLR
 from tqdm import tqdm
 
-from src.training.losses import LabelSmoothingCrossEntropy
+from src.training.losses import LabelSmoothingCrossEntropy, compute_class_weights
 from src.training.evaluator import evaluate_model
 
 
@@ -24,6 +24,7 @@ class Trainer:
         model_type: str = "lstm",
         device: torch.device | None = None,
         save_dir: Path | None = None,
+        train_labels: np.ndarray | None = None,
     ):
         self.model = model
         self.config = config
@@ -39,10 +40,24 @@ class Trainer:
         self.max_epochs = config["training"]["max_epochs"]
         self.patience = config["training"]["early_stopping_patience"]
 
-        # Loss
+        # Loss with optional class weights for imbalance
+        # Per-model override: training.<model>.use_class_weights = false to disable
+        use_weights = config["training"].get("use_class_weights", False)
+        use_weights = train_cfg.get("use_class_weights", use_weights)
+        class_weights = None
+        if train_labels is not None and use_weights:
+            scheme = config["training"].get("class_weight_scheme", "inverse_sqrt")
+            class_weights = compute_class_weights(
+                train_labels,
+                num_classes=config["classes"]["num_classes"],
+                scheme=scheme,
+            ).to(self.device)
+            print(f"  Class weights ({scheme}): {[f'{w:.2f}' for w in class_weights.cpu().numpy()]}")
+
         self.criterion = LabelSmoothingCrossEntropy(
             num_classes=config["classes"]["num_classes"],
             smoothing=config["training"]["label_smoothing"],
+            class_weights=class_weights,
         )
 
         # Optimizer

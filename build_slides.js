@@ -120,7 +120,7 @@ s2.addText("Milestones & Results", {
   x: 0.5, y: 0.15, w: 12.3, h: 0.7,
   fontSize: 32, bold: true, color: WHITE, fontFace: "Georgia", valign: "middle", margin: 0,
 });
-s2.addText("3-match validation run • 1,490 valid pose sequences • Heavy MediaPipe model • CPU training", {
+s2.addText("7-match run • 3,639 valid pose sequences • Heavy MediaPipe pose • 7-class taxonomy • CPU training", {
   x: 0.5, y: 0.55, w: 12.3, h: 0.4,
   fontSize: 13, color: ICE, fontFace: "Calibri", italic: true, valign: "middle", align: "right", margin: 0,
 });
@@ -138,7 +138,7 @@ s2.addText([
   { text: "BiLSTM (527K params) + Spatial-Temporal Transformer (841K params); MediaPipe Tasks API; hip-center normalization; label smoothing CE; stratified split with small-sample fallback.", options: { color: "475569", fontSize: 11, breakLine: true } },
   { text: " ", options: { fontSize: 6, breakLine: true } },
   { text: "Validation", options: { bold: true, color: NAVY, breakLine: true, fontSize: 14 } },
-  { text: "End-to-end run on 3 matches (4,048 clips → 1,490 valid sequences with heavy pose model). Both models train and converge.", options: { color: "475569", fontSize: 11, breakLine: true } },
+  { text: "End-to-end run on 7 matches (7,350 clips → 3,639 valid sequences). 7-class taxonomy (merged pose-indistinguishable classes). LSTM converges; Transformer data-starved.", options: { color: "475569", fontSize: 11, breakLine: true } },
   { text: " ", options: { fontSize: 6, breakLine: true } },
   { text: "Evaluation Suite", options: { bold: true, color: NAVY, breakLine: true, fontSize: 14 } },
   { text: "Confusion matrices, training curves, per-class F1, t-SNE — generated for both models.", options: { color: "475569", fontSize: 11 } },
@@ -181,10 +181,10 @@ s2.addShape(pres.shapes.RECTANGLE, {
 s2.addText("BiLSTM", {
   x: 6.15, y: 2.05, w: 3.15, h: 0.35, fontSize: 12, bold: true, color: TEAL, fontFace: "Calibri", align: "center", charSpacing: 4, margin: 0,
 });
-s2.addText("0.175", {
+s2.addText("0.213", {
   x: 6.15, y: 2.4, w: 3.15, h: 0.7, fontSize: 48, bold: true, color: NAVY, fontFace: "Georgia", align: "center", margin: 0,
 });
-s2.addText("macro-F1   |   21.9% acc", {
+s2.addText("macro-F1   |   25.3% acc", {
   x: 6.15, y: 3.15, w: 3.15, h: 0.3, fontSize: 11, color: NAVY, fontFace: "Calibri", align: "center", margin: 0,
 });
 
@@ -194,10 +194,10 @@ s2.addShape(pres.shapes.RECTANGLE, {
 s2.addText("Transformer", {
   x: 9.5, y: 2.05, w: 3.15, h: 0.35, fontSize: 12, bold: true, color: TEAL, fontFace: "Calibri", align: "center", charSpacing: 4, margin: 0,
 });
-s2.addText("0.118", {
+s2.addText("0.068", {
   x: 9.5, y: 2.4, w: 3.15, h: 0.7, fontSize: 48, bold: true, color: NAVY, fontFace: "Georgia", align: "center", margin: 0,
 });
-s2.addText("macro-F1   |   29.0% acc", {
+s2.addText("collapsed   |   31% (majority)", {
   x: 9.5, y: 3.15, w: 3.15, h: 0.3, fontSize: 11, color: NAVY, fontFace: "Calibri", align: "center", margin: 0,
 });
 
@@ -217,7 +217,7 @@ s2.addShape(pres.shapes.RECTANGLE, {
 });
 s2.addText([
   { text: "KEY FINDING — ", options: { bold: true, color: ACCENT, charSpacing: 3 } },
-  { text: "BiLSTM learns 7/10 classes; Transformer needed LR=1e-4 + plateau scheduler to escape majority-class collapse on 1,043 train samples.", options: { color: WHITE } },
+  { text: "BiLSTM learns all 7 classes (+53% F1 vs baseline). Transformer remains data-hungry — collapses to majority-class on 2,547 train samples despite multiple config attempts.", options: { color: WHITE } },
 ], {
   x: 6.3, y: 6.45, w: 6.2, h: 0.75, fontSize: 12, fontFace: "Calibri", valign: "middle", margin: 0,
 });
@@ -247,10 +247,10 @@ s3.addText("Pragmatic adjustments driven by API breakage, hardware limits, and d
 // 5 change cards — 2 rows
 const cards = [
   { num: "01", title: "MediaPipe API Migration", from: "mp.solutions.pose", to: "Tasks API + PoseLandmarker", why: "Legacy API removed in v0.10.33 — rewrote pose extractor to use new IMAGE-mode landmarker, reusable across clips." },
-  { num: "02", title: "Subset Validation First", from: "44 matches end-to-end", to: "3-match pilot first", why: "Full run = 30+ hr on CPU. De-risked the pipeline before committing to the full data processing run." },
-  { num: "03", title: "Lowered Detection Threshold", from: "min_detection_rate = 0.7", to: "min_detection_rate = 0.5", why: "BWF broadcast = wide-angle distant cameras. At 0.7 only 32% of clips passed; at 0.5 we keep 42.5%." },
-  { num: "04", title: "Sample-Level Splitting", from: "Match-level / LOSO split", to: "Stratified sample split (subset only)", why: "int(3 × 0.15) = 0 matches → empty val/test. Sample-level fallback for ≤4 matches; LOSO returns at scale." },
-  { num: "05", title: "Transformer LR Tuning", from: "LR=5e-4, cosine schedule", to: "LR=1e-4, plateau schedule", why: "Original config caused immediate majority-class collapse on small subset. Lower LR + plateau let the model actually learn (F1: 0.04 → 0.12)." },
+  { num: "02", title: "Subset Run, Not Full 44", from: "44 matches end-to-end", to: "7-match overnight run", why: "Full 44-match run = 30+ hrs on CPU. 7 matches = 3,639 valid sequences, sufficient for pipeline validation + meaningful results." },
+  { num: "03", title: "Class Taxonomy Refinement", from: "10 classes (incl. Drive, Cross-court, Drop)", to: "7 classes (Drop merged into Overhead-Soft)", why: "Drop vs Clear pose-indistinguishable. Drive only 40 samples (untrainable). Cross-court always 0. New taxonomy is pose-discriminable." },
+  { num: "04", title: "Class Weights + Augmentation", from: "Vanilla CE + light aug", to: "Inverse-sqrt class weights + stronger aug", why: "Class imbalance (Overhead-Soft 31%, Other 6%) hurt minority classes. Inverse-sqrt weighting + bigger aug ranges lifted minority-class F1." },
+  { num: "05", title: "Transformer Underperforms", from: "Expected: SOTA on stroke recognition", to: "Reality: data-starved, LSTM wins", why: "Spatial-Temporal Transformer needs more data than 2.5K samples. Multiple LR/scheduler/size configs tried — all collapsed to majority class. LSTM is practical winner." },
 ];
 
 const cardW = 4.05, cardH = 2.85, gapX = 0.15, gapY = 0.25;

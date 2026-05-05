@@ -37,66 +37,62 @@ data:
   normalize_to_hip: true
   scale_by_torso: true
 
-  # Augmentation
+  # Augmentation (stronger for small-data regime)
   augmentation:
     enabled: true
-    temporal_jitter_frames: 3
-    gaussian_noise_std: 0.01
+    temporal_jitter_frames: 5
+    gaussian_noise_std: 0.02
     horizontal_flip_prob: 0.5
-    temporal_scale_range: [0.8, 1.2]
-    frame_dropout_rate: 0.15
+    temporal_scale_range: [0.7, 1.3]
+    frame_dropout_rate: 0.20
 
   # Splits
   split_strategy: "loso"  # "loso" or "stratified"
   stratified_ratios: [0.70, 0.15, 0.15]  # train/val/test
   random_seed: 42
 
-# Stroke class taxonomy
+# Stroke class taxonomy (7-class — pose-discriminable buckets)
+# Removed: Cross-court (always 0 samples), Drive (too few to learn from pose alone)
+# Merged:  Drop → Overhead-Soft (pose-indistinguishable from clear without shuttle trajectory)
 classes:
-  num_classes: 10
+  num_classes: 7
   names:
     - "Serve"
-    - "Clear/Lob"
-    - "Drop"
-    - "Smash"
-    - "Drive"
+    - "Overhead-Soft"     # Clear, Lob, Drop — overhead reaching motion
+    - "Smash"             # Overhead-Power
     - "Net Shot"
     - "Push/Rush"
     - "Defensive Return"
-    - "Cross-court"
     - "Other"
-  # Mapping from ShuttleSet Chinese stroke names to our 10-class taxonomy
-  # Source: ShuttleSet set CSVs use Chinese labels in the 'type' column
-  # All 19 types from the dataset are covered below
+  # Mapping from ShuttleSet Chinese stroke names to our 7-class taxonomy
   shuttleset_mapping:
-    # Serves (2,424 strokes)
-    "發短球": "Serve"         # short serve
-    "發長球": "Serve"         # long serve
-    # Clear / Lob (8,253 strokes)
-    "長球": "Clear/Lob"      # clear
-    "挑球": "Clear/Lob"      # lob / lift
-    # Drop (3,500 strokes)
-    "切球": "Drop"           # slice/drop
-    "過度切球": "Drop"        # transitional slice
-    # Smash (4,234 strokes)
-    "殺球": "Smash"          # smash
-    "點扣": "Smash"          # tap smash / half smash
-    # Drive (1,241 strokes)
-    "平球": "Drive"          # drive
-    "後場抽平球": "Drive"     # backcourt drive
-    "小平球": "Drive"        # short drive / push drive
-    # Net Shot (7,661 strokes)
-    "放小球": "Net Shot"     # net shot / drop to net
-    "勾球": "Net Shot"       # cross-court net shot
-    # Push / Rush (3,437 strokes)
-    "推球": "Push/Rush"      # push
-    "撲球": "Push/Rush"      # rush / kill at net
-    # Defensive Return (4,327 strokes)
-    "擋小球": "Defensive Return"   # block
-    "防守回抽": "Defensive Return"  # defensive drive return
-    "防守回挑": "Defensive Return"  # defensive lift return
-    # Other / unknown (1,407 strokes)
-    "未知球種": "Other"       # unknown stroke type
+    # Serves
+    "發短球": "Serve"
+    "發長球": "Serve"
+    # Overhead-Soft (Clear + Lob + Drop merged)
+    "長球": "Overhead-Soft"
+    "挑球": "Overhead-Soft"
+    "切球": "Overhead-Soft"
+    "過度切球": "Overhead-Soft"
+    # Smash (overhead power)
+    "殺球": "Smash"
+    "點扣": "Smash"
+    # Drives folded into "Other" (only 1,241 strokes total, not enough to learn separately)
+    "平球": "Other"
+    "後場抽平球": "Other"
+    "小平球": "Other"
+    # Net Shot
+    "放小球": "Net Shot"
+    "勾球": "Net Shot"
+    # Push / Rush
+    "推球": "Push/Rush"
+    "撲球": "Push/Rush"
+    # Defensive Return
+    "擋小球": "Defensive Return"
+    "防守回抽": "Defensive Return"
+    "防守回挑": "Defensive Return"
+    # Other / unknown
+    "未知球種": "Other"
 
 model:
   # LSTM
@@ -114,20 +110,22 @@ model:
       embed_dim: 64
       num_heads: 2
       num_layers: 2
-      dropout: 0.1
+      dropout: 0.2
     temporal:
       embed_dim: 128
       num_heads: 4
-      num_layers: 3
-      dropout: 0.1
+      num_layers: 2
+      dropout: 0.2
     keypoint_embed_dim: 32
 
 training:
   # Common
   max_epochs: 100
-  early_stopping_patience: 10
-  label_smoothing: 0.1
+  early_stopping_patience: 12
+  label_smoothing: 0.05
   num_workers: 0  # 0 for Windows compatibility
+  use_class_weights: true
+  class_weight_scheme: "inverse_sqrt"  # gentler than "inverse"
 
   # LSTM-specific
   lstm:
@@ -142,12 +140,11 @@ training:
   transformer:
     batch_size: 32
     optimizer: "adamw"
-    learning_rate: 1.0e-4
+    learning_rate: 2.0e-4
     weight_decay: 1.0e-4
-    lr_scheduler: "plateau"
-    lr_patience: 5
-    lr_factor: 0.5
-    warmup_epochs: 0
+    lr_scheduler: "cosine"
+    warmup_epochs: 5
+    use_class_weights: false  # Class weights make transformer loss too noisy on small data
 
 evaluation:
   primary_metric: "macro_f1"
