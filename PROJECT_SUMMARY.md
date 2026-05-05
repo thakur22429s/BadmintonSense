@@ -24,7 +24,7 @@ BWF Match Video → Clip Stroke Segments → MediaPipe Pose Extraction → Hip-C
 - **Source:** ShuttleSet (KDD 2023) from the CoachAI-Projects GitHub repo
 - **Full dataset:** 36,492 annotated strokes across 44 BWF professional matches
 - **Annotations:** Chinese-language stroke labels mapped to a 10-class English taxonomy
-- **Subset used for validation:** 3 matches (4,048 strokes → 1,721 valid pose sequences after filtering)
+- **Subset used for validation:** 3 matches (4,048 strokes → 1,490 valid pose sequences with heavy MediaPipe model)
 
 ### 10-Class Stroke Taxonomy (mapped from 19 ShuttleSet Chinese labels):
 | Class | Description | ShuttleSet Labels |
@@ -101,10 +101,14 @@ BWF Match Video → Clip Stroke Segments → MediaPipe Pose Extraction → Hip-C
 
 | Metric | BiLSTM | Transformer |
 |--------|--------|-------------|
-| **Macro-F1** | **0.139** | 0.085 |
-| **Weighted-F1** | **0.177** | 0.115 |
-| **Accuracy** | 22.4% | 25.1% |
-| Best Epoch | 33 (of 43, early stopped) | 25 (of 35, early stopped) |
+| **Macro-F1** | **0.175** | 0.118 |
+| **Weighted-F1** | **0.205** | 0.155 |
+| **Accuracy** | 21.9% | 29.0% |
+| Best Epoch | 44 (of 54, early stopped) | 67 (of 77, early stopped) |
+
+**Heavy pose model run (1,490 valid sequences) vs lite pose run (1,721 sequences):**
+- BiLSTM: 0.139 → 0.175 (+26% relative)
+- Transformer: 0.085 → 0.118 (+38% relative, after LR tuning to 1e-4 + plateau)
 
 ### Per-Class F1 Scores (Test Set)
 
