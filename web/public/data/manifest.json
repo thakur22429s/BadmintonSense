@@ -1,0 +1,86 @@
+[
+  {
+    "slug": "chou-tien-chen-anders-antonsen-fuzhou-open-2019-semi-finals",
+    "rawName": "CHOU_Tien_Chen_Anders_ANTONSEN_Fuzhou_Open_2019_Semi-finals",
+    "display": "CHOU Tien Chen def. Anders ANTONSEN \u2014 Fuzhou Open 2019 (2019) \u2014 Semi-finals",
+    "winner": "CHOU Tien Chen",
+    "loser": "Anders ANTONSEN",
+    "tournament": "Fuzhou Open 2019",
+    "round": "Semi-finals",
+    "year": 2019,
+    "totalStrokes": 704,
+    "validStrokes": 471
+  },
+  {
+    "slug": "kento-momota-chou-tien-chen-fuzhou-open-2019-finals",
+    "rawName": "Kento_MOMOTA_CHOU_Tien_Chen_Fuzhou_Open_2019_Finals",
+    "display": "Kento MOMOTA def. CHOU Tien Chen \u2014 Fuzhou Open 2019 (2019) \u2014 Finals",
+    "winner": "Kento MOMOTA",
+    "loser": "CHOU Tien Chen",
+    "tournament": "Fuzhou Open 2019",
+    "round": "Finals",
+    "year": 2019,
+    "totalStrokes": 1644,
+    "validStrokes": 1235
+  },
+  {
+    "slug": "anders-antonsen-jonatan-christie-indonesia-masters-2020-quarterfinals",
+    "rawName": "Anders_ANTONSEN_Jonatan_CHRISTIE Indonesia_Masters_2020_QuarterFinals",
+    "display": "Anders ANTONSEN def. Jonatan CHRISTIE \u2014 Indonesia Masters 2020 (2020) \u2014 Quarter-finals",
+    "winner": "Anders ANTONSEN",
+    "loser": "Jonatan CHRISTIE",
+    "tournament": "Indonesia Masters 2020",
+    "round": "Quarter-finals",
+    "year": 2020,
+    "totalStrokes": 1018,
+    "validStrokes": 706
+  },
+  {
+    "slug": "anthony-sinisuka-ginting-anders-antonsen-indonesia-masters-2020-final",
+    "rawName": "Anthony_Sinisuka_GINTING_Anders_ANTONSEN_Indonesia_Masters_2020_Final",
+    "display": "Anthony Sinisuka GINTING def. Anders ANTONSEN \u2014 Indonesia Masters 2020 (2020) \u2014 Finals",
+    "winner": "Anthony Sinisuka GINTING",
+    "loser": "Anders ANTONSEN",
+    "tournament": "Indonesia Masters 2020",
+    "round": "Finals",
+    "year": 2020,
+    "totalStrokes": 824,
+    "validStrokes": 547
+  },
+  {
+    "slug": "kento-momota-viktor-axelsen-malaysia-masters-2020-finals",
+    "rawName": "Kento_MOMOTA_Viktor_AXELSEN_Malaysia_Masters_2020_Finals",
+    "display": "Kento MOMOTA def. Viktor AXELSEN \u2014 Malaysia Masters 2020 (2020) \u2014 Finals",
+    "winner": "Kento MOMOTA",
+    "loser": "Viktor AXELSEN",
+    "tournament": "Malaysia Masters 2020",
+    "round": "Finals",
+    "year": 2020,
+    "totalStrokes": 756,
+    "validStrokes": 425
+  },
+  {
+    "slug": "anders-antonsen-sameer-verma-toyota-thailand-open-2021-quarterfinals",
+    "rawName": "Anders_Antonsen_Sameer_Verma_TOYOTA_THAILAND_OPEN_2021_QuarterFinals",
+    "display": "Anders ANTONSEN def. Sameer VERMA \u2014 TOYOTA THAILAND OPEN 2021 (2021) \u2014 Quarter-finals",
+    "winner": "Anders ANTONSEN",
+    "loser": "Sameer VERMA",
+    "tournament": "TOYOTA THAILAND OPEN 2021",
+    "round": "Quarter-finals",
+    "year": 2021,
+    "totalStrokes": 1204,
+    "validStrokes": 228
+  },
+  {
+    "slug": "ng-ka-long-angus-kidambi-srikanth-hsbc-bwf-world-tour-finals-2020-quarterfinals",
+    "rawName": "Ng_Ka_Long_Angus_Kidambi_Srikanth_HSBC_BWF_WORLD_TOUR_FINALS_2020_QuarterFinals",
+    "display": "NG Ka Long Angus def. KIDAMBI Srikanth \u2014 HSBC BWF WORLD TOUR FINALS 2020 (2021) \u2014 Quarter-finals",
+    "winner": "NG Ka Long Angus",
+    "loser": "KIDAMBI Srikanth",
+    "tournament": "HSBC BWF WORLD TOUR FINALS 2020",
+    "round": "Quarter-finals",
+    "year": 2021,
+    "totalStrokes": 1200,
+    "validStrokes": 27
+  }
+]

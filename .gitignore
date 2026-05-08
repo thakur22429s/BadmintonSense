@@ -41,3 +41,7 @@ Thumbs.db
 # Logs
 *.log
 wandb/
+
+# Generated webapp data — committed for Vercel build reproducibility
+!web/public/data/
+!web/public/data/**
