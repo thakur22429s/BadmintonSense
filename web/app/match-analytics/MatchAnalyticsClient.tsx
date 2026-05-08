@@ -79,11 +79,11 @@ export function MatchAnalyticsClient({ matches, manifest }: { matches: MatchData
     <div className="mt-8 space-y-6">
       <div className="grid md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
-          <label className="block text-sm text-muted-foreground mb-1">Match</label>
+          <span className="block text-sm text-muted-foreground mb-1">Match</span>
           <MatchSelector matches={manifest} value={matchSlug} onChange={setMatchSlug} />
         </div>
         <div>
-          <label className="block text-sm text-muted-foreground mb-1">Model</label>
+          <span className="block text-sm text-muted-foreground mb-1">Model</span>
           <Tabs value={model} onValueChange={(v) => setModel(v as ModelType)}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="lstm">BiLSTM</TabsTrigger>

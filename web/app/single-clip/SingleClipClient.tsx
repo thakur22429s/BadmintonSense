@@ -37,7 +37,7 @@ export function SingleClipClient({ matches, manifest }: { matches: MatchData[]; 
     <div className="mt-8 space-y-6">
       <div className="grid md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
-          <label className="block text-sm text-muted-foreground mb-1">Match</label>
+          <span className="block text-sm text-muted-foreground mb-1">Match</span>
           <MatchSelector
             matches={manifest}
             value={matchSlug}
@@ -49,7 +49,7 @@ export function SingleClipClient({ matches, manifest }: { matches: MatchData[]; 
           />
         </div>
         <div>
-          <label className="block text-sm text-muted-foreground mb-1">Model</label>
+          <span className="block text-sm text-muted-foreground mb-1">Model</span>
           <Tabs value={model} onValueChange={(v) => setModel(v as ModelType)}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="lstm">BiLSTM</TabsTrigger>
@@ -62,7 +62,7 @@ export function SingleClipClient({ matches, manifest }: { matches: MatchData[]; 
       </div>
 
       <div>
-        <label className="block text-sm text-muted-foreground mb-1">Stroke</label>
+        <span className="block text-sm text-muted-foreground mb-1">Stroke</span>
         <StrokeSelector strokes={browsableStrokes} value={clipId} onChange={setClipId} />
       </div>
 
@@ -74,9 +74,12 @@ export function SingleClipClient({ matches, manifest }: { matches: MatchData[]; 
             <h3 className="font-semibold mb-3">Clip</h3>
             {stroke.clipUrl ? <ClipPlayer src={stroke.clipUrl} /> : <p className="text-muted-foreground">Clip not available.</p>}
             <div className="mt-4">
-              <label className="block text-sm text-muted-foreground mb-2">Pose at frame {frameIdx + 1}/30</label>
+              <label htmlFor="pose-frame-range" className="block text-sm text-muted-foreground mb-2">
+                Pose at frame {frameIdx + 1}/30
+              </label>
               {stroke.keypoints && <PoseSkeleton keypoints={stroke.keypoints} frameIdx={frameIdx} />}
               <input
+                id="pose-frame-range"
                 type="range"
                 min={0}
                 max={(stroke.keypoints?.length ?? 30) - 1}
