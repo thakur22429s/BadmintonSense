@@ -1,0 +1,88 @@
+{
+  "headline": {
+    "lstm": {
+      "macroF1": 0.213,
+      "weightedF1": 0.235,
+      "accuracy": 0.253,
+      "bestEpoch": 30
+    },
+    "transformer": {
+      "macroF1": 0.068,
+      "weightedF1": 0.146,
+      "accuracy": 0.31,
+      "bestEpoch": 6
+    }
+  },
+  "progression": [
+    {
+      "label": "Lite poses \u00b7 3 matches \u00b7 10-class",
+      "lstmF1": 0.139,
+      "lstmAcc": 0.224
+    },
+    {
+      "label": "Heavy poses \u00b7 3 matches \u00b7 10-class",
+      "lstmF1": 0.175,
+      "lstmAcc": 0.219
+    },
+    {
+      "label": "Heavy \u00b7 7 matches \u00b7 7-class",
+      "lstmF1": 0.213,
+      "lstmAcc": 0.253
+    }
+  ],
+  "perClassF1Final": {
+    "Overhead-Soft": {
+      "lstm": 0.38,
+      "transformer": 0.38,
+      "support": 169
+    },
+    "Other": {
+      "lstm": 0.4,
+      "transformer": 0.47,
+      "support": 33
+    },
+    "Push/Rush": {
+      "lstm": 0.2,
+      "transformer": 0.0,
+      "support": 59
+    },
+    "Net Shot": {
+      "lstm": 0.18,
+      "transformer": 0.0,
+      "support": 102
+    },
+    "Defensive Return": {
+      "lstm": 0.14,
+      "transformer": 0.0,
+      "support": 77
+    },
+    "Serve": {
+      "lstm": 0.11,
+      "transformer": 0.0,
+      "support": 43
+    },
+    "Smash": {
+      "lstm": 0.07,
+      "transformer": 0.0,
+      "support": 63
+    }
+  },
+  "findings": [
+    "BiLSTM outperforms Transformer at this data scale \u2014 partial signal on 5/7 classes vs the Transformer's 2.",
+    "Transformer collapsed to majority-class prediction (~94% Overhead-Soft) \u2014 classic data-starved behavior with 1,204 train samples.",
+    "'Other' class is unexpectedly easy \u2014 distinctive uncertain-movement poses.",
+    "Overhead-Soft is the majority class (24%) and dominates both models' predictions.",
+    "LSTM training curves show overfitting after epoch ~15 \u2014 more data or stronger augmentation needed.",
+    "t-SNE shows LSTM learned structured embeddings (visible clusters); Transformer embeddings are diffuse."
+  ],
+  "figures": {
+    "confusion_matrix_lstm": "/figures/confusion_matrix_lstm.png",
+    "confusion_matrix_transformer": "/figures/confusion_matrix_transformer.png",
+    "training_curves_lstm": "/figures/training_curves_lstm.png",
+    "training_curves_transformer": "/figures/training_curves_transformer.png",
+    "tsne_lstm": "/figures/tsne_lstm.png",
+    "tsne_transformer": "/figures/tsne_transformer.png",
+    "per_class_f1_lstm": "/figures/per_class_f1_lstm.png",
+    "per_class_f1_transformer": "/figures/per_class_f1_transformer.png"
+  }
+}

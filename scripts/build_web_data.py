@@ -255,6 +255,104 @@ def emit_match_json(
     }
 
 
+def emit_aggregate(manifest: list[dict], match_jsons: list[dict], out_dir: Path) -> None:
+    n_matches = len(manifest)
+    n_strokes = sum(m["totalStrokes"] for m in manifest)
+    n_valid = sum(m["validStrokes"] for m in manifest)
+
+    if not match_jsons:
+        agg = {"nMatches": 0, "nStrokes": 0, "nValid": 0, "models": {}}
+    else:
+        class_names = match_jsons[0]["classNames"]
+        n_classes = len(class_names)
+        models_block = {}
+        for mname in match_jsons[0]["models"].keys():
+            total_conf = np.zeros((n_classes, n_classes), dtype=int)
+            for mj in match_jsons:
+                total_conf += np.array(mj["models"][mname]["confusion"])
+            tp = np.diag(total_conf)
+            pred_total = total_conf.sum(axis=0)
+            truth_total = total_conf.sum(axis=1)
+            per_class_f1 = {}
+            f1s = []
+            for i, c in enumerate(class_names):
+                prec = tp[i] / pred_total[i] if pred_total[i] else 0.0
+                rec = tp[i] / truth_total[i] if truth_total[i] else 0.0
+                f1 = 2 * prec * rec / (prec + rec) if (prec + rec) else 0.0
+                per_class_f1[c] = round(float(f1), 4)
+                f1s.append(f1)
+            macro_f1 = round(float(np.mean(f1s)), 4)
+            acc = round(float(tp.sum() / max(total_conf.sum(), 1)), 4)
+            models_block[mname] = {
+                "macroF1": macro_f1,
+                "accuracy": acc,
+                "confusion": total_conf.tolist(),
+                "perClassF1": per_class_f1,
+            }
+        agg = {
+            "nMatches": n_matches,
+            "nStrokes": n_strokes,
+            "nValid": n_valid,
+            "classNames": class_names,
+            "models": models_block,
+        }
+
+    (out_dir / "aggregate.json").write_text(json.dumps(agg, indent=2))
+
+
+def emit_results(config, out_dir: Path) -> None:
+    """Bundle published per-class F1 + run progression for /results page.
+    Pulls numbers from PROJECT_SUMMARY.md (frozen) since training-curve CSVs
+    aren't always present. Training curve PNGs are linked as static assets.
+    """
+    figures_dir = Path(config["paths"]["figures"])
+    figure_assets = {}
+    for fname in [
+        "confusion_matrix_lstm.png", "confusion_matrix_transformer.png",
+        "training_curves_lstm.png", "training_curves_transformer.png",
+        "tsne_lstm.png", "tsne_transformer.png",
+        "per_class_f1_lstm.png", "per_class_f1_transformer.png",
+    ]:
+        src = figures_dir / fname
+        if src.exists():
+            tgt_dir = out_dir.parent / "figures"
+            tgt_dir.mkdir(parents=True, exist_ok=True)
+            tgt = tgt_dir / fname
+            shutil.copyfile(src, tgt)
+            figure_assets[fname.replace(".png", "")] = f"/figures/{fname}"
+
+    results = {
+        "headline": {
+            "lstm": {"macroF1": 0.213, "weightedF1": 0.235, "accuracy": 0.253, "bestEpoch": 30},
+            "transformer": {"macroF1": 0.068, "weightedF1": 0.146, "accuracy": 0.310, "bestEpoch": 6},
+        },
+        "progression": [
+            {"label": "Lite poses · 3 matches · 10-class", "lstmF1": 0.139, "lstmAcc": 0.224},
+            {"label": "Heavy poses · 3 matches · 10-class", "lstmF1": 0.175, "lstmAcc": 0.219},
+            {"label": "Heavy · 7 matches · 7-class", "lstmF1": 0.213, "lstmAcc": 0.253},
+        ],
+        "perClassF1Final": {
+            "Overhead-Soft": {"lstm": 0.38, "transformer": 0.38, "support": 169},
+            "Other": {"lstm": 0.40, "transformer": 0.47, "support": 33},
+            "Push/Rush": {"lstm": 0.20, "transformer": 0.00, "support": 59},
+            "Net Shot": {"lstm": 0.18, "transformer": 0.00, "support": 102},
+            "Defensive Return": {"lstm": 0.14, "transformer": 0.00, "support": 77},
+            "Serve": {"lstm": 0.11, "transformer": 0.00, "support": 43},
+            "Smash": {"lstm": 0.07, "transformer": 0.00, "support": 63},
+        },
+        "findings": [
+            "BiLSTM outperforms Transformer at this data scale — partial signal on 5/7 classes vs the Transformer's 2.",
+            "Transformer collapsed to majority-class prediction (~94% Overhead-Soft) — classic data-starved behavior with 1,204 train samples.",
+            "'Other' class is unexpectedly easy — distinctive uncertain-movement poses.",
+            "Overhead-Soft is the majority class (24%) and dominates both models' predictions.",
+            "LSTM training curves show overfitting after epoch ~15 — more data or stronger augmentation needed.",
+            "t-SNE shows LSTM learned structured embeddings (visible clusters); Transformer embeddings are diffuse.",
+        ],
+        "figures": figure_assets,
+    }
+    (out_dir / "results.json").write_text(json.dumps(results, indent=2))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, default=Path("web/public"))
@@ -294,14 +392,20 @@ def main() -> int:
         print("FATAL: no checkpoints loaded")
         return 2
 
+    match_jsons = []
     for entry in manifest:
         m_df = merged[merged["match_name"] == entry["rawName"]]
         match_json = emit_match_json(
             entry["rawName"], m_df, models, device, config, match_info, out_data
         )
+        match_jsons.append(match_json)
         target = out_data / "matches" / f"{entry['slug']}.json"
         target.write_text(json.dumps(match_json))
         print(f"  emitted {target.name}: {len(match_json['strokes'])} strokes")
+
+    emit_aggregate(manifest, match_jsons, out_data)
+    emit_results(config, out_data)
+    print("aggregate.json + results.json written")
 
     return 0
 
