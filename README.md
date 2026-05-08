@@ -34,6 +34,23 @@ python scripts/07_evaluate.py            # Generate evaluation plots
 
 ## Demo
 
+### Live Vercel showcase (Next.js)
+
+> Live demo URL: _paste Vercel URL here after deploy_
+
+To deploy:
+
+1. Go to https://vercel.com/new
+2. Import `thakur22429s/BadmintonSense`
+3. Set Root Directory: `web`
+4. Framework Preset: Next.js (auto-detected)
+5. Build Command: `npm run build` (default)
+6. Output Directory: `.next` (default)
+7. Click Deploy
+8. After build completes, paste the URL above
+
+### Streamlit (legacy demo)
+
 ```bash
 streamlit run app/streamlit_app.py
 ```
