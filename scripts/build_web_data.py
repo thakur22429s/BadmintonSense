@@ -353,6 +353,47 @@ def emit_results(config, out_dir: Path) -> None:
     (out_dir / "results.json").write_text(json.dumps(results, indent=2))
 
 
+MAX_CLIPS_BUDGET_MB = 200
+
+
+def copy_clips(match_jsons: list[dict], merged: pd.DataFrame, out_dir: Path) -> dict:
+    """Copy MP4 clips into web/public/clips/. Prioritize clips that have
+    keypoints baked into JSON (these are the /single-clip browsables)."""
+    clips_root = out_dir.parent / "clips"
+    clips_root.mkdir(parents=True, exist_ok=True)
+
+    priority_ids: list[str] = []
+    fallback_ids: list[str] = []
+    clip_paths = dict(zip(merged["clip_id"], merged["clip_path"]))
+
+    for mj in match_jsons:
+        for s in mj["strokes"]:
+            if s["keypoints"] is not None:
+                priority_ids.append(s["clipId"])
+            else:
+                fallback_ids.append(s["clipId"])
+
+    copied = {}
+    total_bytes = 0
+    budget = MAX_CLIPS_BUDGET_MB * 1024 * 1024
+
+    for cid in priority_ids + fallback_ids:
+        src = Path(clip_paths.get(cid, ""))
+        if not src.exists():
+            continue
+        size = src.stat().st_size
+        if total_bytes + size > budget and cid not in priority_ids:
+            continue
+        tgt = clips_root / f"{cid}.mp4"
+        if not tgt.exists():
+            shutil.copyfile(src, tgt)
+        copied[cid] = True
+        total_bytes += size
+
+    print(f"  copied {len(copied)} clips ({total_bytes / 1024 / 1024:.1f} MB)")
+    return copied
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, default=Path("web/public"))
@@ -406,6 +447,17 @@ def main() -> int:
     emit_aggregate(manifest, match_jsons, out_data)
     emit_results(config, out_data)
     print("aggregate.json + results.json written")
+
+    copy_clips(match_jsons, merged, out_data)
+
+    copied_set = set(p.stem for p in (out_data.parent / "clips").glob("*.mp4"))
+    for entry in manifest:
+        target = out_data / "matches" / f"{entry['slug']}.json"
+        mj = json.loads(target.read_text())
+        for s in mj["strokes"]:
+            if s["clipId"] not in copied_set:
+                s["clipUrl"] = None
+        target.write_text(json.dumps(mj))
 
     return 0
 
