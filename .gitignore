@@ -46,4 +46,6 @@ wandb/
 !web/public/data/
 !web/public/data/**
 
-web/public/clips/
+# Curated showcase clips committed for Vercel build (overrides *.mp4 above)
+!web/public/clips/
+!web/public/clips/**
