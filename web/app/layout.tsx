@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
+import { Nav } from "@/components/layout/Nav";
+import { Footer } from "@/components/layout/Footer";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 const ibm = IBM_Plex_Sans({
@@ -21,7 +24,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${ibm.variable} ${jbm.variable}`}>
-      <body>{children}</body>
+      <body>
+        <TooltipProvider>
+          <Nav />
+          {children}
+          <Footer />
+        </TooltipProvider>
+      </body>
     </html>
   );
 }
