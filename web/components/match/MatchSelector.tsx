@@ -6,14 +6,16 @@ export function MatchSelector({
   matches,
   value,
   onChange,
+  ariaLabel = "Match",
 }: {
   matches: ManifestEntry[];
   value: string;
   onChange: (slug: string) => void;
+  ariaLabel?: string;
 }) {
   return (
     <Select value={value} onValueChange={(v) => onChange(v ?? "")}>
-      <SelectTrigger className="w-full md:w-[520px]">
+      <SelectTrigger aria-label={ariaLabel} className="w-full md:w-[520px]">
         <SelectValue placeholder="Select a match" />
       </SelectTrigger>
       <SelectContent>
